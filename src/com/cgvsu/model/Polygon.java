@@ -41,4 +41,11 @@ public class Polygon {
     public ArrayList<Integer> getNormalIndices() {
         return normalIndices;
     }
+
+    @Override
+    public String toString() {
+        return "\n" + "-Vertexes: " + vertexIndices.toString() + "\n" +
+                "TextureVertexes: " + textureVertexIndices + "\n" +
+                "NormalIndexes: " + normalIndices + " ";
+    }
 }

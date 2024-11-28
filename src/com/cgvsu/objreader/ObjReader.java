@@ -5,9 +5,7 @@ import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.Model;
 import com.cgvsu.model.Polygon;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.*;
 
 public class ObjReader {
 
@@ -18,12 +16,13 @@ public class ObjReader {
 
 	public static Model read(String fileContent) {
 		Model result = new Model();
+		Scanner scanner = new Scanner(fileContent);
 
 		int lineInd = 0;
-		Scanner scanner = new Scanner(fileContent);
+
 		while (scanner.hasNextLine()) {
 			final String line = scanner.nextLine();
-			ArrayList<String> wordsInLine = new ArrayList<String>(Arrays.asList(line.split("\\s+")));
+			ArrayList<String> wordsInLine = new ArrayList<String>(Arrays.asList(line.split("\\s+"))); // сплитим по пробелам
 			if (wordsInLine.isEmpty()) {
 				continue;
 			}
@@ -46,11 +45,11 @@ public class ObjReader {
 				case OBJ_VERTEX_TOKEN -> result.vertices.add(parseVertex(wordsInLine, lineInd));
 				case OBJ_TEXTURE_TOKEN -> result.textureVertices.add(parseTextureVertex(wordsInLine, lineInd));
 				case OBJ_NORMAL_TOKEN -> result.normals.add(parseNormal(wordsInLine, lineInd));
-				case OBJ_FACE_TOKEN -> result.polygons.add(parseFace(wordsInLine, lineInd));
+				case OBJ_FACE_TOKEN -> result.polygons.add(parseFace(wordsInLine, lineInd, result.vertices.size()));
 				default -> {}
 			}
 		}
-
+		checkInfoAfterReading(result);
 		return result;
 	}
 
@@ -61,10 +60,8 @@ public class ObjReader {
 					Float.parseFloat(wordsInLineWithoutToken.get(0)),
 					Float.parseFloat(wordsInLineWithoutToken.get(1)),
 					Float.parseFloat(wordsInLineWithoutToken.get(2)));
-
 		} catch(NumberFormatException e) {
 			throw new ObjReaderException("Failed to parse float value.", lineInd);
-
 		} catch(IndexOutOfBoundsException e) {
 			throw new ObjReaderException("Too few vertex arguments.", lineInd);
 		}
@@ -75,10 +72,8 @@ public class ObjReader {
 			return new Vector2f(
 					Float.parseFloat(wordsInLineWithoutToken.get(0)),
 					Float.parseFloat(wordsInLineWithoutToken.get(1)));
-
 		} catch(NumberFormatException e) {
 			throw new ObjReaderException("Failed to parse float value.", lineInd);
-
 		} catch(IndexOutOfBoundsException e) {
 			throw new ObjReaderException("Too few texture vertex arguments.", lineInd);
 		}
@@ -90,22 +85,20 @@ public class ObjReader {
 					Float.parseFloat(wordsInLineWithoutToken.get(0)),
 					Float.parseFloat(wordsInLineWithoutToken.get(1)),
 					Float.parseFloat(wordsInLineWithoutToken.get(2)));
-
 		} catch(NumberFormatException e) {
 			throw new ObjReaderException("Failed to parse float value.", lineInd);
-
 		} catch(IndexOutOfBoundsException e) {
 			throw new ObjReaderException("Too few normal arguments.", lineInd);
 		}
 	}
 
-	protected static Polygon parseFace(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
+	protected static Polygon parseFace(final ArrayList<String> wordsInLineWithoutToken, int lineInd, int verticesAmount) {
 		ArrayList<Integer> onePolygonVertexIndices = new ArrayList<Integer>();
 		ArrayList<Integer> onePolygonTextureVertexIndices = new ArrayList<Integer>();
 		ArrayList<Integer> onePolygonNormalIndices = new ArrayList<Integer>();
 
 		for (String s : wordsInLineWithoutToken) {
-			parseFaceWord(s, onePolygonVertexIndices, onePolygonTextureVertexIndices, onePolygonNormalIndices, lineInd);
+			parseFaceWord(s, onePolygonVertexIndices, onePolygonTextureVertexIndices, onePolygonNormalIndices, lineInd, verticesAmount);
 		}
 
 		Polygon result = new Polygon();
@@ -123,34 +116,135 @@ public class ObjReader {
 			ArrayList<Integer> onePolygonVertexIndices,
 			ArrayList<Integer> onePolygonTextureVertexIndices,
 			ArrayList<Integer> onePolygonNormalIndices,
-			int lineInd) {
+			int lineInd,
+			int verticesAmount) {
 		try {
 			String[] wordIndices = wordInLine.split("/");
+			// проверяем как у нас указаны вершины: используется обычная адресация или отрицательная, если обычная, то процесс обычный,
+			// если отрицательная, то к отрицательному индексу прибавляем кол-во вершин (в obj-файле принято использоваться одинаковый тип индексации,
+			// если вершины заданы отрицательной индексацией, то текстурные вершины и нормали, тоже должны быть заданы отрицательной адресацией, поэтому
+			// достаточно проверить тип адресации только у вершин)
+			boolean flag = Integer.parseInt(wordIndices[0]) < 0;
 			switch (wordIndices.length) {
 				case 1 -> {
-					onePolygonVertexIndices.add(Integer.parseInt(wordIndices[0]) - 1);
+					if (flag) {
+						onePolygonVertexIndices.add(Integer.parseInt(wordIndices[0]) + verticesAmount);
+					} else {
+						onePolygonVertexIndices.add(Integer.parseInt(wordIndices[0]) - 1);
+					}
 				}
 				case 2 -> {
-					onePolygonVertexIndices.add(Integer.parseInt(wordIndices[0]) - 1);
-					onePolygonTextureVertexIndices.add(Integer.parseInt(wordIndices[1]) - 1);
+					if (flag) {
+						onePolygonVertexIndices.add(Integer.parseInt(wordIndices[0]) + verticesAmount);
+						onePolygonTextureVertexIndices.add(Integer.parseInt(wordIndices[1]) + verticesAmount);
+					} else {
+						onePolygonVertexIndices.add(Integer.parseInt(wordIndices[0]) - 1);
+						onePolygonTextureVertexIndices.add(Integer.parseInt(wordIndices[1]) - 1);
+					}
 				}
 				case 3 -> {
-					onePolygonVertexIndices.add(Integer.parseInt(wordIndices[0]) - 1);
-					onePolygonNormalIndices.add(Integer.parseInt(wordIndices[2]) - 1);
-					if (!wordIndices[1].equals("")) {
-						onePolygonTextureVertexIndices.add(Integer.parseInt(wordIndices[1]) - 1);
+					if (flag) {
+						onePolygonVertexIndices.add(Integer.parseInt(wordIndices[0]) + verticesAmount);
+						onePolygonNormalIndices.add(Integer.parseInt(wordIndices[2]) + verticesAmount);
+						if (!wordIndices[1].equals("")) {
+							onePolygonTextureVertexIndices.add(Integer.parseInt(wordIndices[1]) + verticesAmount);
+						}
+					} else {
+						onePolygonVertexIndices.add(Integer.parseInt(wordIndices[0]) - 1);
+						onePolygonNormalIndices.add(Integer.parseInt(wordIndices[2]) - 1);
+						if (!wordIndices[1].equals("")) {
+							onePolygonTextureVertexIndices.add(Integer.parseInt(wordIndices[1]) - 1);
+						}
 					}
 				}
 				default -> {
 					throw new ObjReaderException("Invalid element size.", lineInd);
 				}
 			}
-
 		} catch(NumberFormatException e) {
 			throw new ObjReaderException("Failed to parse int value.", lineInd);
-
 		} catch(IndexOutOfBoundsException e) {
 			throw new ObjReaderException("Too few arguments.", lineInd);
 		}
+	}
+
+	// номера вершин, текстурных вершин и нормалей начинаются с единицы
+	// нужны геттеры в vector2f и vector3f
+	protected static void checkInfoAfterReading(Model model) {
+		ArrayList<Vector3f> modelVertices = model.vertices;
+		ArrayList<Vector2f> modelTextureVertices = model.textureVertices;
+		ArrayList<Vector3f> modelNormals = model.normals;
+		ArrayList<Polygon> modelPolygons = model.polygons;
+		Set<Float> polygonVerticesXsSet = new HashSet<>();
+		Set<Float> polygonVerticesYsSet = new HashSet<>();
+		Set<Float> polygonVerticesZsSet = new HashSet<>();
+		for (int i = 0; i < modelPolygons.size(); i++) {
+			Polygon polygon = model.polygons.get(i);
+			ArrayList<Integer> polygonVertices = polygon.getVertexIndices();
+			ArrayList<Integer> polygonTextureVertices = polygon.getTextureVertexIndices();
+			ArrayList<Integer> polygonNormals = polygon.getNormalIndices();
+			if (modelVertices.size() < 3) {
+				throw new RuntimeException("Model has 2 or fewer vertices."); // в моделе две вершины или меньше
+			} else if (modelPolygons.size() == 0) {
+				throw new RuntimeException("There is not a single polygon in the model."); // в моделе нет ни одного полигона
+			} else if (polygonVertices.size() != polygonTextureVertices.size() && (polygonTextureVertices.size() != 0)) {
+				throw new RuntimeException("Not all vertices of polygon number " + i + " have a texture vertex attached to them"); // не ко всем вершинам полигона номер i привязана текстурная вершина
+			} else if (polygonVertices.size() != polygonNormals.size() && (polygonNormals.size() != 0)) {
+				throw new RuntimeException("Not all vertices of polygon number " + i + " have a normals attached to them"); // не ко всем вершинам полигона номер i привяза нормаль
+			}
+			Vector3f vertices;
+			for (int j = 0; j < polygonVertices.size(); j++) {
+				try {
+					vertices = modelVertices.get(polygonVertices.get(j));
+					polygonVerticesXsSet.add(vertices.getX());
+					polygonVerticesYsSet.add(vertices.getY());
+					polygonVerticesZsSet.add(vertices.getZ());
+					/**
+					здесь я должен проверять вершины полигона, отдельно по каждой координате. Допустим, добавлять x,y,z в множество (set), в идеале только
+					одно множество должно быть длины 1, то есть в котором один элемент. Это будет означать, что все точки полигона лежат в одной плоскости, если
+					 же два множества будут иметь длину 1, то это значит, что точки полигона лежат на одной кривой, если все 3 множества будут длины 1, то
+					 точки полигоны равны
+					*/
+				} catch (IndexOutOfBoundsException exception) {
+					throw new RuntimeException("For polygon #" + (i+1) + ": there is no vertex with number " + (polygonVertices.get(j)+1) + " in the file."); // в файле нет вершины с номером j
+				}
+			}
+			int setsLengthCounter = ObjReader.counterForSetsLength(polygonVerticesXsSet, polygonVerticesYsSet, polygonVerticesZsSet);
+			if (setsLengthCounter == 0) {
+				throw new RuntimeException("For polygon #" + (i+1) + ": it's points do not lie in the same plane");
+			} else if (setsLengthCounter > 1) {
+				throw new RuntimeException("For polygon #" + (i+1) + ": all points of it lie on a straight line or it's represented by only one point");
+			}
+			for (int k = 0; k < polygonTextureVertices.size(); k++) {
+				try {
+					/**
+					 * мб проверять значение текстурных координат, чтобы они лежали на отрезке [0;1]
+					 */
+					Vector2f textureVertices = modelTextureVertices.get(polygonTextureVertices.get(k));
+				} catch (IndexOutOfBoundsException exception) {
+					throw new RuntimeException("For polygon #" + (i+1) +": there is no texture vertex with number " + (polygonTextureVertices.get(k)+1) + " in the file."); // в файле нет текстурной вершины с номером k
+				}
+			}
+			for (int l = 0; l < polygonNormals.size(); l++) {
+				try {
+					/**
+					 * мб проверять значение нормалей, чтобы они лежали на отрезке [0;1]
+					 */
+					Vector3f normals = modelNormals.get(polygonNormals.get(l));
+				} catch (IndexOutOfBoundsException exception) {
+					throw new RuntimeException("For polygon #" + (i+1) + ": there is no normal with number " + (polygonNormals.get(l)+1) + " in the file."); // в файле нет текстурной вершины с номером l
+				}
+			}
+		}
+	}
+
+	protected static int counterForSetsLength(Set<Float>... hashSets) {
+		int counter = 0;
+		for (Set<Float> hashSet : hashSets) {
+			if (hashSet.size() == 1) {
+				counter++;
+			}
+		}
+		return counter;
 	}
 }
