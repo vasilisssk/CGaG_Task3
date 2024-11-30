@@ -13,11 +13,19 @@ import java.util.Arrays;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        //        Path fileName = Path.of("3DModels/SimpleModelsForReaderTests/GGGG.obj");
-        Path fileName = Path.of("3DModels/SimpleModelsForReaderTests/My  Test02.obj");
+        Path fileName = Path.of("3DModels/SimpleModelsForReaderTests/GGGG.obj");
+        Path fileName2 = Path.of("3DModels/SimpleModelsForReaderTests/Test02.obj");
+        Path fileName3 = Path.of("3DModels/SimpleModelsForReaderTests/MyTest03.obj");
+        Path fileName4 = Path.of("3DModels/SimpleModelsForReaderTests/Test04.obj");
+        Path fileName5 = Path.of("3DModels/SimpleModelsForReaderTests/Test05.obj");
+        Path fileName6 = Path.of("3DModels/SimpleModelsForReaderTests/Test06.obj");
+        Path fileName7 = Path.of("3DModels/SimpleModelsForReaderTests/Test07.obj");
+        Path teapotInvalidVertexCount = Path.of("3DModels/SimpleModelsForReaderTests/TeapotInvalidVertexCount.obj");
+        Path teapot = Path.of("3DModels/SimpleModelsForReaderTests/Teapot.obj");
+        Path body = Path.of("3DModels/Faceform/WrapBody.obj");;
         String fileContent = null;
         try {
-            fileContent = Files.readString(fileName);
+            fileContent = Files.readString(teapot);
         } catch (MalformedInputException exception) {
             System.out.println("Ошибка: в названии файла использована кириллица.");
             System.exit(1);
@@ -28,10 +36,10 @@ public class Main {
 
         System.out.println("Loading model ...");
         Model model = ObjReader.read(fileContent);
-
-        System.out.println("Vertices: " + /*model.vertices.size() +*/ model.vertices);
-        System.out.println("Texture vertices: " + /*model.textureVertices.size() +*/ model.textureVertices);
-        System.out.println("Normals: " + /*model.normals.size() +*/ model.normals);
-        System.out.println("Polygons: " + /*model.polygons.size() +*/ model.polygons);
+//
+//        System.out.println("Vertices: " + /*model.vertices.size() +*/ model.vertices);
+//        System.out.println("Texture vertices: " + /*model.textureVertices.size() +*/ model.textureVertices);
+//        System.out.println("Normals: " + /*model.normals.size() +*/ model.normals);
+//        System.out.println("Polygons: " + /*model.polygons.size() +*/ model.polygons);
     }
 }
