@@ -56,12 +56,18 @@ public class ObjReader {
                 }
             }
         }
-        checkInfoAfterReading(result);
+        checkModelAfterReading(result);
         return result;
     }
 
     // Всем методам кроме основного я поставил модификатор доступа protected, чтобы обращаться к ним в тестах
     protected static Vector3f parseVertex(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
+        try {
+            if (!wordsInLineWithoutToken.get(3).equals("")) {
+                throw new ObjReaderException("More than three coordinates are specified for the vertex.", lineInd);
+            }
+        } catch (IndexOutOfBoundsException exception) {
+        }
         try {
             return new Vector3f(
                     Float.parseFloat(wordsInLineWithoutToken.get(0)),
@@ -176,131 +182,131 @@ public class ObjReader {
     }
 
     // номера вершин, текстурных вершин и нормалей начинаются с единицы
-    protected static void checkInfoAfterReading(Model model) {
-//		String errorMessage = "";
-        Matrix3f matrix3f = new Matrix3f();
-        matrix3f.setCell(0, 0, 1);
-        matrix3f.setCell(0, 1, 1);
-        matrix3f.setCell(0, 2, 1);
+    protected static void checkModelAfterReading(Model model) {
         ArrayList<Vector3f> modelVertices = model.vertices;
         ArrayList<Vector2f> modelTextureVertices = model.textureVertices;
         ArrayList<Vector3f> modelNormals = model.normals;
         ArrayList<Polygon> modelPolygons = model.polygons;
+        int basedCounter = 0;
+
         if (modelVertices.size() < 3) {
-//				errorMessage = "Error: model has 2 or fewer vertices.";
-//				return errorMessage;
             throw new RuntimeException("Model has 2 or fewer vertices."); // в моделе две вершины или меньше
         } else if (modelPolygons.size() == 0) {
-//				errorMessage = "Error: there is not a single polygon in the model.";
-//				return errorMessage;
             throw new RuntimeException("There is not a single polygon in the model."); // в моделе нет ни одного полигона
         }
+
         for (int i = 0; i < modelPolygons.size(); i++) {
-            Polygon polygon = model.polygons.get(i);
-            ArrayList<Integer> polygonVertices = polygon.getVertexIndices();
-            if (polygonVertices.size() < 3) {
-                throw new RuntimeException("For polygon #" + (i + 1) + ": it consists only of 2 or fewer vertices.");
-            }
-            ArrayList<Integer> polygonTextureVertices = polygon.getTextureVertexIndices();
-            ArrayList<Integer> polygonNormals = polygon.getNormalIndices();
-            if (polygonVertices.size() != polygonTextureVertices.size() && (polygonTextureVertices.size() != 0)) {
-//				errorMessage = "Error: not all vertices of polygon number " + i + " have a texture vertex attached to them.";
-//				return errorMessage;
-                throw new RuntimeException("Not all vertices of polygon number " + i + " have a texture vertex attached to them."); // не ко всем вершинам полигона номер i привязана текстурная вершина
-            } else if (polygonVertices.size() != polygonNormals.size() && (polygonNormals.size() != 0)) {
-//				errorMessage = "Error: not all vertices of polygon number " + i + " have a normals attached to them.";
-//				return errorMessage;
-                throw new RuntimeException("Not all vertices of polygon number " + i + " have a normals attached to them."); // не ко всем вершинам полигона номер i привяза нормаль
-            }
-            for (int j = 0; j < polygonVertices.size()-2; j++) {
-                for (int k = j+1; k < polygonVertices.size() - 1; k++) {
-                    Vector3f firstPoint3D;
-                    try {
-                        firstPoint3D = modelVertices.get(polygonVertices.get(k));
-                    } catch (IndexOutOfBoundsException exception) {
-                        throw new RuntimeException("For polygon #" + (i + 1) + ": there is no vertex with number " + (polygonVertices.get(k) + 1) + " in the file.");
-                    }
-                    Vector3f firstVector3f;
-                    try {
-                        firstVector3f = new Vector3f(firstPoint3D.getX() - modelVertices.get(polygonVertices.get(0)).getX(), firstPoint3D.getY() - modelVertices.get(polygonVertices.get(0)).getY(), firstPoint3D.getZ() - modelVertices.get(polygonVertices.get(0)).getZ());
-                    } catch (IndexOutOfBoundsException exception) {
-                        throw new RuntimeException("For polygon #" + (i + 1) + ": there is no vertex with number " + (polygonVertices.get(0) + 1) + " in the file.");
-                    }
-                    matrix3f.setCell(1, 0, firstVector3f.getX());
-                    matrix3f.setCell(1, 1, firstVector3f.getY());
-                    matrix3f.setCell(1, 2, firstVector3f.getZ());
-                    for (int l = k + 1; l < polygonVertices.size(); l++) {
-                        Vector3f secondPoint3D;
-                        try {
-                            secondPoint3D = modelVertices.get(polygonVertices.get(l));
-                        } catch (IndexOutOfBoundsException exception) {
-                            throw new RuntimeException("For polygon #" + (i + 1) + ": there is no vertex with number " + (polygonVertices.get(l) + 1) + " in the file.");
-                        }
-                        Vector3f secondVector3f = new Vector3f(secondPoint3D.getX() - modelVertices.get(polygonVertices.get(0)).getX(), secondPoint3D.getY() - modelVertices.get(polygonVertices.get(0)).getY(), secondPoint3D.getZ() - modelVertices.get(polygonVertices.get(0)).getZ());
-                        matrix3f.setCell(2, 0, secondVector3f.getX());
-                        matrix3f.setCell(2, 1, secondVector3f.getY());
-                        matrix3f.setCell(2, 2, secondVector3f.getZ());
-                        if (matrix3f.determinate() == 0) {
-//                              errorMessage = "For polygon #" + (i + 1) + ": incorrect vertex values.";
-//					            return errorMessage;
-                            throw new RuntimeException("For polygon #" + (i + 1) + ": some of its points lie on the same line or are identical.");
-                        }
-//                        Vector3f vectorProduct = new Vector3f(matrix3f.getCell(1, 1) * matrix3f.getCell(2, 2) - matrix3f.getCell(1, 2) * matrix3f.getCell(2, 1),
-//                                matrix3f.getCell(1, 2) * matrix3f.getCell(2, 0) - matrix3f.getCell(1, 0) * matrix3f.getCell(2, 2),
-//                                matrix3f.getCell(1, 0) * matrix3f.getCell(2, 1) - matrix3f.getCell(1, 1) * matrix3f.getCell(2, 0));
-//                        if (l < polygonVertices.size() - 1) {
-//                            for (int m = l + 1/*k+2*/; m < polygonVertices.size(); m++) {
-//                                Vector3f thirdPoint3D;
-//                                try {
-//                                    thirdPoint3D = modelVertices.get(polygonVertices.get(m));
-//                                } catch (IndexOutOfBoundsException exception) {
-//                                    throw new RuntimeException("For polygon #" + (i + 1) + ": there is no vertex with number " + (polygonVertices.get(m) + 1) + " in the file.");
-//                                }
-//                                Vector3f forthVector3f = new Vector3f(thirdPoint3D.getX() - modelVertices.get(polygonVertices.get(0)).getX(), thirdPoint3D.getY() - modelVertices.get(polygonVertices.get(0)).getY(), thirdPoint3D.getZ() - modelVertices.get(polygonVertices.get(0)).getZ());
-//                                double test = Math.abs(vectorProduct.dotProduct(forthVector3f));
-////                                System.out.printf("%1s, %2s\n", test, i);
-//                                if (Math.abs(vectorProduct.dotProduct(forthVector3f)) > 3/*1e-6*/) { //если ноль, то лежит в одной плоскости
-//                                    throw new RuntimeException("For polygon #" + (i + 1) + ": its points do not lie in the same plane.");
-//                                }
-//                            }
-//                        }
-                    }
+            int counter = checkPolygon(model.polygons.get(i), i, modelVertices, modelTextureVertices, modelNormals);
+            if (i == 0) {
+                basedCounter = counter;
+            } else {
+                if (counter != basedCounter) {
+                    throw new RuntimeException("Not all polygons in the model have a texture vertex or normal attached to them.");
                 }
-//			if (setsLengthCounter == 0) {
-////				errorMessage = "Error: for polygon #" + (i+1) + ": it's points do not lie in the same plane";
-////				return errorMessage;
-//				throw new RuntimeException("For polygon #" + (i+1) + ": it's points do not lie in the same plane");
-//			} else if (setsLengthCounter > 1) {
-////				errorMessage = "Error: for polygon #" + (i+1) + ": all points of it lie on a straight line, or it's represented by only one point";
-////				return errorMessage;
-//				throw new RuntimeException("For polygon #" + (i+1) + ": all it's points lie on a straight line, or it's represented by only one point");
-//			}
-                for (int k = 0; k < polygonTextureVertices.size(); k++) {
-                    try {
-                        /**
-                         * мб проверять значение текстурных координат, чтобы они лежали на отрезке [0;1]
-                         */
-                        Vector2f textureVertices = modelTextureVertices.get(polygonTextureVertices.get(k));
-                    } catch (IndexOutOfBoundsException exception) {
-//					errorMessage = "Error: for polygon #" + (i+1) +": there is no texture vertex with number " + (polygonTextureVertices.get(k)+1) + " in the file.";
-//					return errorMessage;
-                        throw new RuntimeException("For polygon #" + (i + 1) + ": there is no texture vertex with number " + (polygonTextureVertices.get(k) + 1) + " in the file."); // в файле нет текстурной вершины с номером k
-                    }
-                }
-                for (int l = 0; l < polygonNormals.size(); l++) {
-                    try {
-                        /**
-                         * мб проверять значение нормалей, чтобы они лежали на отрезке [0;1]
-                         */
-                        Vector3f normals = modelNormals.get(polygonNormals.get(l));
-                    } catch (IndexOutOfBoundsException exception) {
-//					errorMessage = "Error: for polygon #" + (i+1) + ": there is no normal with number " + (polygonNormals.get(l)+1) + " in the file.";
-//					return errorMessage;
-                        throw new RuntimeException("For polygon #" + (i + 1) + ": there is no normal with number " + (polygonNormals.get(l) + 1) + " in the file."); // в файле нет нормали с номером l
-                    }
-                }
-            }
-//		return errorMessage;
+           }
         }
+    }
+
+    protected static int checkPolygon(Polygon polygon, int polygonIndex, ArrayList<Vector3f> modelVertices, ArrayList<Vector2f> modelTextureVertices, ArrayList<Vector3f> modelNormals) {
+        int counter = 0;
+        Matrix3f matrix3f = new Matrix3f();
+        matrix3f.setCell(0, 0, 1);
+        matrix3f.setCell(0, 1, 1);
+        matrix3f.setCell(0, 2, 1);
+
+        ArrayList<Integer> polygonVertices = polygon.getVertexIndices();
+        if (polygonVertices.size() < 3) {
+            throw new RuntimeException("For polygon #" + (polygonIndex + 1) + ": it consists only of 2 or fewer vertices.");
+        }
+
+        ArrayList<Integer> polygonTextureVertices = polygon.getTextureVertexIndices();
+        ArrayList<Integer> polygonNormals = polygon.getNormalIndices();
+        if (polygonVertices.size() != polygonTextureVertices.size() && (polygonTextureVertices.size() != 0)) {
+            throw new RuntimeException("Not all vertices of polygon number " + (polygonIndex + 1) + " have a texture vertex attached to them."); // не ко всем вершинам полигона номер i привязана текстурная вершина
+        } else if (polygonVertices.size() != polygonNormals.size() && (polygonNormals.size() != 0)) {
+            throw new RuntimeException("Not all vertices of polygon number " + (polygonIndex + 1) + " have a normals attached to them."); // не ко всем вершинам полигона номер i привяза нормаль
+        }
+
+        if (polygonTextureVertices.size() != 0) {
+            counter+=2;
+        }
+        if (polygonNormals.size() != 0) {
+            counter+=3;
+        }
+
+        for (int j = 0; j < polygonVertices.size() - 2; j++) {
+
+            for (int k = j + 1; k < polygonVertices.size() - 1; k++) {
+                Vector3f firstPoint3D;
+                try {
+                    firstPoint3D = modelVertices.get(polygonVertices.get(k));
+                } catch (IndexOutOfBoundsException exception) {
+                    throw new RuntimeException("For polygon #" + (polygonIndex + 1) + ": there is no vertex with number " + (polygonVertices.get(k) + 1) + " in the file.");
+                }
+
+                Vector3f firstVector3f;
+                try {
+                    firstVector3f = new Vector3f(firstPoint3D.getX() - modelVertices.get(polygonVertices.get(0)).getX(), firstPoint3D.getY() - modelVertices.get(polygonVertices.get(0)).getY(), firstPoint3D.getZ() - modelVertices.get(polygonVertices.get(0)).getZ());
+                } catch (IndexOutOfBoundsException exception) {
+                    throw new RuntimeException("For polygon #" + (polygonIndex + 1) + ": there is no vertex with number " + (polygonVertices.get(0) + 1) + " in the file.");
+                }
+                matrix3f.setCell(1, 0, firstVector3f.getX());
+                matrix3f.setCell(1, 1, firstVector3f.getY());
+                matrix3f.setCell(1, 2, firstVector3f.getZ());
+
+                for (int l = k + 1; l < polygonVertices.size(); l++) {
+                    Vector3f secondPoint3D;
+                    try {
+                        secondPoint3D = modelVertices.get(polygonVertices.get(l));
+                    } catch (IndexOutOfBoundsException exception) {
+                        throw new RuntimeException("For polygon #" + (polygonIndex + 1) + ": there is no vertex with number " + (polygonVertices.get(l) + 1) + " in the file.");
+                    }
+
+                    Vector3f secondVector3f = new Vector3f(secondPoint3D.getX() - modelVertices.get(polygonVertices.get(0)).getX(), secondPoint3D.getY() - modelVertices.get(polygonVertices.get(0)).getY(), secondPoint3D.getZ() - modelVertices.get(polygonVertices.get(0)).getZ());
+                    matrix3f.setCell(2, 0, secondVector3f.getX());
+                    matrix3f.setCell(2, 1, secondVector3f.getY());
+                    matrix3f.setCell(2, 2, secondVector3f.getZ());
+                    Vector3f vectorProduct = new Vector3f(matrix3f.getCell(1, 1) * matrix3f.getCell(2, 2) - matrix3f.getCell(1, 2) * matrix3f.getCell(2, 1),
+                            matrix3f.getCell(1, 2) * matrix3f.getCell(2, 0) - matrix3f.getCell(1, 0) * matrix3f.getCell(2, 2),
+                            matrix3f.getCell(1, 0) * matrix3f.getCell(2, 1) - matrix3f.getCell(1, 1) * matrix3f.getCell(2, 0));
+                    if (vectorProduct.getX() == 0 && vectorProduct.getY() == 0 && vectorProduct.getZ() == 0) {
+                        throw new RuntimeException("For polygon #" + (polygonIndex + 1) + ": some of its points lie on the same line or are identical.");
+                    }
+
+                    if (l < polygonVertices.size() - 1) {
+                        for (int m = l + 1; m < polygonVertices.size(); m++) {
+                            Vector3f thirdPoint3D;
+                            try {
+                                thirdPoint3D = modelVertices.get(polygonVertices.get(m));
+                            } catch (IndexOutOfBoundsException exception) {
+                                throw new RuntimeException("For polygon #" + (polygonIndex + 1) + ": there is no vertex with number " + (polygonVertices.get(m) + 1) + " in the file.");
+                            }
+
+                            Vector3f forthVector3f = new Vector3f(thirdPoint3D.getX() - modelVertices.get(polygonVertices.get(0)).getX(), thirdPoint3D.getY() - modelVertices.get(polygonVertices.get(0)).getY(), thirdPoint3D.getZ() - modelVertices.get(polygonVertices.get(0)).getZ());
+                            if (Math.abs(vectorProduct.dotProduct(forthVector3f)) != 0/*3 1e-6*/) { //если ноль, то лежит в одной плоскости
+                                throw new RuntimeException("For polygon #" + (polygonIndex + 1) + ": its points do not lie in the same plane.");
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (int k = 0; k < polygonTextureVertices.size(); k++) {
+                try {
+                    Vector2f textureVertices = modelTextureVertices.get(polygonTextureVertices.get(k));
+                } catch (IndexOutOfBoundsException exception) {
+                    throw new RuntimeException("For polygon #" + (polygonIndex + 1) + ": there is no texture vertex with number " + (polygonTextureVertices.get(k) + 1) + " in the file."); // в файле нет текстурной вершины с номером k
+                }
+            }
+
+            for (int l = 0; l < polygonNormals.size(); l++) {
+                try {
+                    Vector3f normals = modelNormals.get(polygonNormals.get(l));
+                } catch (IndexOutOfBoundsException exception) {
+                    throw new RuntimeException("For polygon #" + (polygonIndex + 1) + ": there is no normal with number " + (polygonNormals.get(l) + 1) + " in the file."); // в файле нет нормали с номером l
+                }
+            }
+        }
+        return counter;
     }
 }

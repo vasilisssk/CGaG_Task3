@@ -15,7 +15,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         Path fileName = Path.of("3DModels/SimpleModelsForReaderTests/GGGG.obj");
         Path fileName2 = Path.of("3DModels/SimpleModelsForReaderTests/Test02.obj");
-        Path fileName3 = Path.of("3DModels/SimpleModelsForReaderTests/MyTest03.obj");
+        Path fileName3 = Path.of("3DModels/SimpleModelsForReaderTests/Test03.obj");
         Path fileName4 = Path.of("3DModels/SimpleModelsForReaderTests/Test04.obj");
         Path fileName5 = Path.of("3DModels/SimpleModelsForReaderTests/Test05.obj");
         Path fileName6 = Path.of("3DModels/SimpleModelsForReaderTests/Test06.obj");
@@ -25,7 +25,7 @@ public class Main {
         Path body = Path.of("3DModels/Faceform/WrapBody.obj");;
         String fileContent = null;
         try {
-            fileContent = Files.readString(teapot);
+            fileContent = Files.readString(fileName);
         } catch (MalformedInputException exception) {
             System.out.println("Ошибка: в названии файла использована кириллица.");
             System.exit(1);
