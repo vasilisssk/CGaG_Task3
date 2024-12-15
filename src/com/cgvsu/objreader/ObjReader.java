@@ -294,6 +294,8 @@ public class ObjReader {
                             }
 
                             Vector3f forthVector3f = new Vector3f(thirdPoint3D.getX() - modelVertices.get(polygonVertices.get(0)).getX(), thirdPoint3D.getY() - modelVertices.get(polygonVertices.get(0)).getY(), thirdPoint3D.getZ() - modelVertices.get(polygonVertices.get(0)).getZ());
+                            // для вещественных использовать эпсилон либо целое число большее нуля, так как точки могут лежать в одной плоскости с некоторым отклонением, из-за чего
+                            //значение скалярного произведения может быть даже > 1
                             if (Math.abs(vectorProduct.dotProduct(forthVector3f)) != 0/*3 1e-6*/) { //если ноль, то лежит в одной плоскости
                                 throw new RuntimeException("For polygon #" + (polygonIndex + 1) + ": its points do not lie in the same plane.");
                             }
