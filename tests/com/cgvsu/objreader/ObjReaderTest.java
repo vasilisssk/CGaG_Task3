@@ -60,6 +60,32 @@ class ObjReaderTest {
         }
     }
 
+    @Test
+    public void testParseTextureVertex01() {
+        ArrayList<String> wordsInLineWithoutToken = new ArrayList<>(Arrays.asList("1.0", "2.0", "3.0"));
+        try {
+            ObjReader.parseTextureVertex(wordsInLineWithoutToken, 10);
+            Assertions.fail();
+
+        } catch (ObjReaderException exception) {
+            String expectedError = "Error parsing OBJ file on line: 10. More than two coordinates are specified for the texture vertex.";
+            Assertions.assertEquals(expectedError, exception.getMessage());
+        }
+    }
+
+    @Test
+    public void testParseNormal01() {
+        ArrayList<String> wordsInLineWithoutToken = new ArrayList<>(Arrays.asList("1.0", "2.0", "3.0", "4.0"));
+        try {
+            ObjReader.parseNormal(wordsInLineWithoutToken, 10);
+            Assertions.fail();
+
+        } catch (ObjReaderException exception) {
+            String expectedError = "Error parsing OBJ file on line: 10. More than three coordinates are specified for the normal.";
+            Assertions.assertEquals(expectedError, exception.getMessage());
+        }
+    }
+
        @Test
     public void testCheckPolygon01() {
         Polygon polygon = new Polygon();

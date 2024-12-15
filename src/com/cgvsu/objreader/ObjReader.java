@@ -1,6 +1,5 @@
 package com.cgvsu.objreader;
 
-import com.cgvsu.math.Global;
 import com.cgvsu.math.Matrix3f;
 import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
@@ -66,7 +65,7 @@ public class ObjReader {
             if (!wordsInLineWithoutToken.get(3).equals("")) {
                 throw new ObjReaderException("More than three coordinates are specified for the vertex.", lineInd);
             }
-        } catch (IndexOutOfBoundsException exception) {
+        } catch (IndexOutOfBoundsException ignored) {
         }
         try {
             return new Vector3f(
@@ -82,6 +81,12 @@ public class ObjReader {
 
     protected static Vector2f parseTextureVertex(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
         try {
+            if (!wordsInLineWithoutToken.get(2).equals("")) {
+                throw new ObjReaderException("More than two coordinates are specified for the texture vertex.", lineInd);
+            }
+        } catch (IndexOutOfBoundsException ignored) {
+        }
+        try {
             return new Vector2f(
                     Float.parseFloat(wordsInLineWithoutToken.get(0)),
                     Float.parseFloat(wordsInLineWithoutToken.get(1)));
@@ -93,6 +98,12 @@ public class ObjReader {
     }
 
     protected static Vector3f parseNormal(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
+        try {
+            if (!wordsInLineWithoutToken.get(3).equals("")) {
+                throw new ObjReaderException("More than three coordinates are specified for the normal.", lineInd);
+            }
+        } catch (IndexOutOfBoundsException exception) {
+        }
         try {
             return new Vector3f(
                     Float.parseFloat(wordsInLineWithoutToken.get(0)),
