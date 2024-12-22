@@ -22,7 +22,8 @@ public class Main {
         Path fileName7 = Path.of("3DModels/SimpleModelsForReaderTests/Test07.obj");
         Path teapotInvalidVertexCount = Path.of("3DModels/SimpleModelsForReaderTests/TeapotInvalidVertexCount.obj");
         Path teapot = Path.of("3DModels/SimpleModelsForReaderTests/Teapot.obj");
-        Path body = Path.of("3DModels/Faceform/WrapBody.obj");;
+        Path body = Path.of("3DModels/Faceform/WrapBody.obj");
+        Path caracal_cube = Path.of("3DModels/CaracalCube/caracal_cube.obj");
         String fileContent = null;
         try {
             fileContent = Files.readString(fileName);
@@ -36,10 +37,10 @@ public class Main {
 
         System.out.println("Loading model ...");
         Model model = ObjReader.read(fileContent);
-//
-//        System.out.println("Vertices: " + /*model.vertices.size() +*/ model.vertices);
-//        System.out.println("Texture vertices: " + /*model.textureVertices.size() +*/ model.textureVertices);
-//        System.out.println("Normals: " + /*model.normals.size() +*/ model.normals);
-//        System.out.println("Polygons: " + /*model.polygons.size() +*/ model.polygons);
+
+        System.out.println("Vertices: " + /*model.vertices.size() +*/ model.vertices);
+        System.out.println("Texture vertices: " + /*model.textureVertices.size() +*/ model.textureVertices);
+        System.out.println("Normals: " + /*model.normals.size() +*/ model.normals);
+        System.out.println("Polygons: " + /*model.polygons.size() +*/ model.polygons);
     }
 }
