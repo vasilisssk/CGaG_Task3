@@ -26,7 +26,7 @@ public class Main {
         Path caracal_cube = Path.of("3DModels/CaracalCube/caracal_cube.obj");
         String fileContent = null;
         try {
-            fileContent = Files.readString(fileName);
+            fileContent = Files.readString(teapot);
         } catch (MalformedInputException exception) {
             System.out.println("Ошибка: в названии файла использована кириллица.");
             System.exit(1);

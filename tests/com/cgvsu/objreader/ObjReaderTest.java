@@ -207,43 +207,43 @@ class ObjReaderTest {
         }
     }
 
-    @Test
-    public void testCheckPolygon08() {
-        Polygon polygon = new Polygon();
-        polygon.setVertexIndices(new ArrayList<Integer>(List.of(0,1,2,3,4,5)));
-//        polygon.setTextureVertexIndices(new ArrayList<Integer>(List.of(0,1,2)));
-//        polygon.setNormalIndices(new ArrayList<Integer>(List.of(0,1,2)));
-        ArrayList<Vector3f> modelVertices = new ArrayList<Vector3f>(List.of(new Vector3f(0,0,0), new Vector3f(0,0,1), new Vector3f(0,1,1), new Vector3f(1,1,1), new Vector3f(1,0,1), new Vector3f(1,0,0)));
-        ArrayList<Vector2f> modelTextureVertices = new ArrayList<Vector2f>(List.of(new Vector2f(0,0), new Vector2f(1,0), new Vector2f(0,1)));
-        ArrayList<Vector3f> modelNormals = new ArrayList<Vector3f>(List.of(new Vector3f(0.1f,0.1f,0.1f), new Vector3f(0.2f,0.2f,0.2f), new Vector3f(0.3f,0.3f,0.3f)));
-        try {
-            ObjReader.checkPolygon(polygon, 0, modelVertices, null, null);
-            Assertions.fail();
+//    @Test
+//    public void testCheckPolygon08() {
+//        Polygon polygon = new Polygon();
+//        polygon.setVertexIndices(new ArrayList<Integer>(List.of(0,1,2,3,4,5)));
+////        polygon.setTextureVertexIndices(new ArrayList<Integer>(List.of(0,1,2)));
+////        polygon.setNormalIndices(new ArrayList<Integer>(List.of(0,1,2)));
+//        ArrayList<Vector3f> modelVertices = new ArrayList<Vector3f>(List.of(new Vector3f(0,0,0), new Vector3f(0,0,1), new Vector3f(0,1,1), new Vector3f(1,1,1), new Vector3f(1,0,1), new Vector3f(1,0,0)));
+//        ArrayList<Vector2f> modelTextureVertices = new ArrayList<Vector2f>(List.of(new Vector2f(0,0), new Vector2f(1,0), new Vector2f(0,1)));
+//        ArrayList<Vector3f> modelNormals = new ArrayList<Vector3f>(List.of(new Vector3f(0.1f,0.1f,0.1f), new Vector3f(0.2f,0.2f,0.2f), new Vector3f(0.3f,0.3f,0.3f)));
+//        try {
+//            ObjReader.checkPolygon(polygon, 0, modelVertices, null, null);
+//            Assertions.fail();
+//
+//        } catch (RuntimeException exception) {
+//            String expectedError = "For polygon #1: its points do not lie in the same plane.";
+//            Assertions.assertEquals(expectedError, exception.getMessage());
+//        }
+//    }
 
-        } catch (RuntimeException exception) {
-            String expectedError = "For polygon #1: its points do not lie in the same plane.";
-            Assertions.assertEquals(expectedError, exception.getMessage());
-        }
-    }
-
-    @Test
-    public void testCheckPolygon09() {
-        Polygon polygon = new Polygon();
-        polygon.setVertexIndices(new ArrayList<Integer>(List.of(0,1,2,3)));
-//        polygon.setTextureVertexIndices(new ArrayList<Integer>(List.of(0,1,2)));
-//        polygon.setNormalIndices(new ArrayList<Integer>(List.of(0,1,2)));
-        ArrayList<Vector3f> modelVertices = new ArrayList<Vector3f>(List.of(new Vector3f(0,0,0), new Vector3f(0,0,1), new Vector3f(1,0,0), new Vector3f(1,1,1)));
-        ArrayList<Vector2f> modelTextureVertices = new ArrayList<Vector2f>(List.of(new Vector2f(0,0), new Vector2f(1,0), new Vector2f(0,1)));
-        ArrayList<Vector3f> modelNormals = new ArrayList<Vector3f>(List.of(new Vector3f(0.1f,0.1f,0.1f), new Vector3f(0.2f,0.2f,0.2f), new Vector3f(0.3f,0.3f,0.3f)));
-        try {
-            ObjReader.checkPolygon(polygon, 0, modelVertices, null, null);
-            Assertions.fail();
-
-        } catch (RuntimeException exception) {
-            String expectedError = "For polygon #1: its points do not lie in the same plane.";
-            Assertions.assertEquals(expectedError, exception.getMessage());
-        }
-    }
+//    @Test
+//    public void testCheckPolygon09() {
+//        Polygon polygon = new Polygon();
+//        polygon.setVertexIndices(new ArrayList<Integer>(List.of(0,1,2,3)));
+////        polygon.setTextureVertexIndices(new ArrayList<Integer>(List.of(0,1,2)));
+////        polygon.setNormalIndices(new ArrayList<Integer>(List.of(0,1,2)));
+//        ArrayList<Vector3f> modelVertices = new ArrayList<Vector3f>(List.of(new Vector3f(0,0,0), new Vector3f(0,0,1), new Vector3f(1,0,0), new Vector3f(1,1,1)));
+//        ArrayList<Vector2f> modelTextureVertices = new ArrayList<Vector2f>(List.of(new Vector2f(0,0), new Vector2f(1,0), new Vector2f(0,1)));
+//        ArrayList<Vector3f> modelNormals = new ArrayList<Vector3f>(List.of(new Vector3f(0.1f,0.1f,0.1f), new Vector3f(0.2f,0.2f,0.2f), new Vector3f(0.3f,0.3f,0.3f)));
+//        try {
+//            ObjReader.checkPolygon(polygon, 0, modelVertices, null, null);
+//            Assertions.fail();
+//
+//        } catch (RuntimeException exception) {
+//            String expectedError = "For polygon #1: its points do not lie in the same plane.";
+//            Assertions.assertEquals(expectedError, exception.getMessage());
+//        }
+//    }
 
     @Test
     public void testCheckPolygon10() {

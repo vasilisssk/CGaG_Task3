@@ -80,7 +80,7 @@ public class ObjReader {
 
     protected static Vector2f parseTextureVertex(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
         try {
-            if (!wordsInLineWithoutToken.get(2).equals("")) {
+            if (!wordsInLineWithoutToken.get(3).equals("")) {
                 throw new ObjReaderException("More than two coordinates are specified for the texture vertex.", lineInd);
             }
         } catch (IndexOutOfBoundsException ignored) {
@@ -98,7 +98,7 @@ public class ObjReader {
 
     protected static Vector3f parseNormal(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
         try {
-            if (!wordsInLineWithoutToken.get(3).equals("")) {
+            if (!wordsInLineWithoutToken.get(4).equals("")) {
                 throw new ObjReaderException("More than three coordinates are specified for the normal.", lineInd);
             }
         } catch (IndexOutOfBoundsException exception) {
@@ -298,13 +298,13 @@ public class ObjReader {
             }
 
             for (int k = 0; k < polygonTextureVertices.size(); k++) {
-                if (polygonTextureVertices.get(k) > modelTextureVertices.size() || polygonTextureVertices.get(k) == -1) {
+                if (polygonTextureVertices.get(k) >= modelTextureVertices.size() || polygonTextureVertices.get(k) == -1) {
                     throw new RuntimeException("For polygon #" + (polygonIndex + 1) + ": there is no texture vertex with number " + (polygonTextureVertices.get(k) + 1) + " in the file."); // в файле нет текстурной вершины с номером k
                 }
             }
 
             for (int l = 0; l < polygonNormals.size(); l++) {
-                if (polygonNormals.get(l) > modelNormals.size() || polygonNormals.get(l) == -1) {
+                if (polygonNormals.get(l) >= modelNormals.size() || polygonNormals.get(l) == -1) {
                     throw new RuntimeException("For polygon #" + (polygonIndex + 1) + ": there is no normal with number " + (polygonNormals.get(l) + 1) + " in the file."); // в файле нет нормали с номером l
                 }
             }
